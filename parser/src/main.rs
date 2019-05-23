@@ -23,7 +23,7 @@ impl<T> Annot<T> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum TokenKind {
     Number(u64),
     Plus,
@@ -250,7 +250,7 @@ enum ParseError {
     Eof,
 }
 
-fn parser(tokens: Vec<Token>) -> Result<Ast, ParseError> {
+fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
     let mut tokens = tokens.into_iter().peekable();
     let ret = parse_expr(&mut tokens)?;
     match tokens.next() {
@@ -398,8 +398,9 @@ fn main() {
     loop {
         prompt("> ").unwrap();
         if let Some(Ok(line)) = lines.next() {
-            let token = lex(&line);
-            println!("{:?}", token);
+            let tokens = lex(&line).unwrap();
+            let ast = parse(tokens).unwrap();
+            println!("{:?}", ast);
         } else {
             break;
         }
@@ -427,7 +428,7 @@ mod test {
     #[test]
     fn test_parser() {
         use super::*;
-        let ast = parser(vec![
+        let ast = parse(vec![
                 Token::number(1, Loc(0, 1)),
                 Token::plus(Loc(2, 3)),
                 Token::number(2, Loc(4, 5)),
